@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Register() {
   const [nombre_completo, setNombreCompleto] = useState("");
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar contraseña
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
 
   const validateForm = () => {
     let newErrors = {};
@@ -63,13 +65,9 @@ function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccessMessage("Usuario registrado exitosamente.");
-        setNombreCompleto("");
-        setCorreo("");
-        setPassword("");
-        setConfirmPassword("");
+        navigate("/login");
       } else {
-        setErrors({ server: data.errors || "Ocurrió un error al registrar." });
+        setErrors({ server: data.error || "Ocurrió un error al registrar." });
       }
     } catch (error) {
       setErrors({ server: "Error al conectar con el servidor." });
@@ -96,14 +94,38 @@ function Register() {
         />
         {errors.correo && <p className="error">{errors.correo}</p>}
 
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {/* Campo de contraseña con ojo */}
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{ 
+              flex: 1, 
+              paddingRight: "40px", // Espacio para el icono
+              width: "100%", 
+              boxSizing: "border-box"
+            }} 
+          />
+          
+          {/* Icono de ojo para mostrar/ocultar */}
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: "absolute",
+              right: "10px",
+              cursor: "pointer",
+              fontSize: "20px"
+            }}
+          >
+            {showPassword ? "👁️" : "🙈"} {/* Cambia el icono según el estado */}
+          </span>
+        </div>
         {errors.password && <p className="error">{errors.password}</p>}
 
+        {/* Campo de confirmar contraseña sin el ojo */}
         <input
           type="password"
           placeholder="Confirmar Contraseña"
@@ -115,9 +137,9 @@ function Register() {
         {errors.server && <p className="error">{errors.server}</p>}
         {successMessage && <p className="success">{successMessage}</p>}
 
-        <button type="submit">Registrarse</button>
+        <button style={{marginTop: "20px"}} type="submit">Registrarse</button>
       </form>
-      <p>¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link></p>
+      <p style={{marginTop: "20px"}}>¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link></p>
     </div>
   );
 }
